@@ -14,8 +14,7 @@
 								:src="cell.image"
 								alt=""
 								draggable="true"
-								@dragstart="onDragStart($event, cell, rowIndex, colIndex)"
-								@dragend="onDragEnd($event)"
+								@dragstart="onDragStart(cell, rowIndex, colIndex)"
 							/>
 							<p class="counter">{{ cell.count }}</p>
 						</div>
@@ -49,6 +48,7 @@ interface ElementItem {
 
 export default {
 	components: { ModalWindow },
+
 	setup() {
 		const rows = ref<Array<Array<ElementItem | null>>>([
 			[
@@ -93,36 +93,34 @@ export default {
 		}
 
 		const updateCount = (item: ElementItem, countToRemove: number) => {
-			item.count -= countToRemove
-			if (item.count <= 0) {
-				const rowIndex = rows.value.findIndex(row => row.includes(item))
-				const colIndex = rows.value[rowIndex].indexOf(item)
-				rows.value[rowIndex][colIndex] = null
-			}
+			const updatedItem = { ...item, count: item.count - countToRemove }
+
+			rows.value.forEach((row, rowIdx) => {
+				row.forEach((cell, colIdx) => {
+					if (cell?.id === item.id) {
+						if (updatedItem.count > 0) {
+							rows.value[rowIdx][colIdx] = updatedItem
+						} else {
+							rows.value[rowIdx][colIdx] = null
+						}
+					}
+				})
+			})
+
 			saveRowsToLocalStorage()
 		}
 
 		let draggedItem: ElementItem | null = null
 		let draggedItemPosition: { rowIndex: number; colIndex: number } | null =
 			null
-
 		const onDragStart = (
-			event: DragEvent,
 			item: ElementItem,
 			rowIndex: number,
 			colIndex: number
 		) => {
 			draggedItem = item
 			draggedItemPosition = { rowIndex, colIndex }
-			// Добавляем анимацию подъёма (класс .dragging) к элементу
-			const target = event.target as HTMLElement
-			target.classList.add('dragging')
-		}
-
-		const onDragEnd = (event: DragEvent) => {
-			// Убираем анимацию после завершения перетаскивания
-			const target = event.target as HTMLElement
-			target.classList.remove('dragging')
+			setTimeout(() => {}, 0)
 		}
 
 		const onDrop = (rowIndex: number, colIndex: number) => {
@@ -147,7 +145,6 @@ export default {
 		}
 		return {
 			onDragStart,
-			onDragEnd,
 			onDrop,
 			rows,
 			modalVisible,

@@ -5,8 +5,11 @@
 				<button class="close_modal" @click="closeModal">
 					<img src="../assets/image/close.svg" alt="" />
 				</button>
-				<div class="box_image">
+				<div class="box_image" v-if="item">
 					<img :src="item.image" alt="Item image" class="item_image" />
+				</div>
+				<div v-else class="box_image">
+					<p>Item image not available</p>
 				</div>
 				<div class="big_element"></div>
 				<div class="elements_box">
@@ -40,15 +43,23 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue'
+import { defineComponent, ref, type PropType } from 'vue'
+
+interface ElementItem {
+	image: string
+}
 
 export default defineComponent({
 	props: {
 		visible: { type: Boolean, required: true },
 		onClose: { type: Function, required: true },
-		item: { type: Object, required: true },
+		item: {
+			type: Object as PropType<ElementItem | null>,
+			default: null,
+		},
 		updateCount: { type: Function, required: true },
 	},
+
 	setup(props) {
 		const inputCount = ref()
 		const confirming = ref(false)
